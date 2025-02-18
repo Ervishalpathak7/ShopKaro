@@ -6,8 +6,6 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 
@@ -15,71 +13,49 @@ import java.util.Optional;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final RedisService redisService;
 
     @Autowired
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, RedisService redisService) {
         this.productRepository = productRepository;
+        this.redisService = redisService;
     }
 
     // Create
     public Product createProduct(Product product) {
-        return productRepository.createProduct(product);
-    }
-
-    // Create multiple
-    public Collection<Product> createProduct(List<Product> products) {
-        return productRepository.createProduct(products);
-    }
-
-    // Read all
-    public List<Product> getAllProducts() {
-        return productRepository.getAllProducts();
+        // Save the product in MongoDB
+        Product savedProduct = productRepository.createProduct(product);
+        // Save the product in Redis
+        redisService.save(savedProduct.getId().toString(), savedProduct);
+        // Return the saved product
+        return savedProduct;
     }
 
     // Read by id
     public Optional<Product> getProductById(ObjectId id) {
-        return Optional.ofNullable(productRepository.getProductById(id));
+        // Check if the product is present in Redis
+        Product product = redisService.find(id.toString());
+        if (product != null) {
+            return Optional.of(product);
+        }
+        Optional<Product> productById = Optional.ofNullable(productRepository.getProductById(id));
+        // Save the product in Redis
+        productById.ifPresent(value -> redisService.save(value.getId().toString(), value));
+        return productById;
     }
 
     // Update
-    public Product updateProduct(ObjectId id, Product productDetails) {
-        return productRepository.updateProduct(id, productDetails);
+    public Product updateProduct(ObjectId id, Product product) {
+        Product updatedProduct = productRepository.updateProduct(id, product);
+        // Update the product in Redis
+        redisService.update(updatedProduct.getId().toString(), updatedProduct);
+        return updatedProduct;
     }
 
     // Delete
     public void deleteProduct(ObjectId id) {
         productRepository.deleteProduct(id);
-    }
-
-    // Find by name (case-insensitive)
-    public List<Product> findProductsByName(String name) {
-        return productRepository.findProductsByName(name);
-    }
-
-    // Find by category
-    public List<Product> findProductsByCategory(String categoryId) {
-        return productRepository.findProductsByCategory(categoryId);
-    }
-
-    // Find by price range
-    public List<Product> findProductsByPriceRange(Double minPrice, Double maxPrice) {
-        return productRepository.findProductsByPriceRange(minPrice, maxPrice);
-    }
-
-    // Find by brand (case-insensitive)
-    public List<Product> findProductsByBrand(String brand) {
-        return productRepository.findProductsByBrand(brand);
-    }
-
-    // Find with multiple filters
-    public List<Product> findProductsByFilters(ObjectId categoryId, Double minPrice,
-                                               Double maxPrice, String brand,
-                                               Boolean isAvailable) {
-        return productRepository.findProductsByFilters(categoryId, minPrice, maxPrice, brand, isAvailable);
-    }
-
-    // Advanced search with pagination and sorting
-    public List<Product> searchProducts(String searchTerm, int page, int size, String sortField) {
-        return productRepository.searchProducts(searchTerm, page, size, sortField);
+        // Delete the product from Redis
+        redisService.delete(id.toString());
     }
 }

@@ -1,0 +1,68 @@
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# Maven target directory
+target/
+
+# Gradle build directory
+build/
+
+# IDE-specific files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Environment variables & secrets
+.env
+*.properties
+application.yml
+application-*.yml
+
+# Dependency directories
+node_modules/
+
+# JAR/WAR files
+*.jar
+*.war
+
+# Database files
+*.h2.db
+*.mv.db
+*.sqlite
+
+# Docker files
+docker-compose.override.yml
+
+# Generated files
+/out/
+/bin/
+
+# Lombok generated files
+.lombok/
+
+# IntelliJ-specific plugin files
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf/
+
+# Logs and caches
+logs/
+!keep_logs
+.cache/
+
+# Spring Boot devtools
+.spring-boot-devtools.properties
+
+# Kubernetes manifests
+k8s/
+/.idea/

@@ -1,13 +1,13 @@
 package com.shopkaro.productService.Controllers;
 
 import com.shopkaro.productService.Entity.Product;
+import com.shopkaro.productService.Services.ElasticSearchService;
 import com.shopkaro.productService.Services.ProductService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -15,29 +15,18 @@ import java.util.List;
 public class ProductControllers {
 
     private final ProductService productService;
+    private final ElasticSearchService elasticSearchService;
 
     @Autowired
-    public ProductControllers(ProductService productServices) {
+    public ProductControllers(ProductService productServices, ElasticSearchService elasticSearchService) {
         this.productService = productServices;
+        this.elasticSearchService = elasticSearchService;
     }
-
 
     // Add a product
     @PostMapping
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         return ResponseEntity.ok(productService.createProduct(product));
-    }
-
-    // Add multiple products
-    @PostMapping("/bulkadd")
-    public ResponseEntity<Collection<Product>> createProduct(@RequestBody List<Product> product) {
-        return ResponseEntity.ok(productService.createProduct(product));
-    }
-
-    // Get all products
-    @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
     }
 
     // Get a product by id
@@ -65,13 +54,13 @@ public class ProductControllers {
     // Search by name
     @GetMapping("/search/name")
     public ResponseEntity<List<Product>> findByName(@RequestParam String name) {
-        return ResponseEntity.ok(productService.findProductsByName(name));
+        return ResponseEntity.ok(elasticSearchService.findProductsByName(name));
     }
 
     // Search by category
     @GetMapping("/search/category/{category}")
     public ResponseEntity<List<Product>> findByCategory(@PathVariable String category) {
-        return ResponseEntity.ok(productService.findProductsByCategory(category));
+        return ResponseEntity.ok(elasticSearchService.findProductsByCategory(category));
     }
 
     // Search by price range
@@ -79,13 +68,13 @@ public class ProductControllers {
     public ResponseEntity<List<Product>> findByPriceRange(
             @RequestParam Double minPrice,
             @RequestParam Double maxPrice) {
-        return ResponseEntity.ok(productService.findProductsByPriceRange(minPrice, maxPrice));
+        return ResponseEntity.ok(elasticSearchService.findProductsByPriceRange(minPrice, maxPrice));
     }
 
     // Search by brand
     @GetMapping("/search/brand")
     public ResponseEntity<List<Product>> findByBrand(@RequestParam String brand) {
-        return ResponseEntity.ok(productService.findProductsByBrand(brand));
+        return ResponseEntity.ok(elasticSearchService.findProductsByBrand(brand));
     }
 
     // Search by multiple filters
@@ -96,7 +85,7 @@ public class ProductControllers {
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) String brand,
             @RequestParam(required = false) Boolean isAvailable) {
-        return ResponseEntity.ok(productService.findProductsByFilters(
+        return ResponseEntity.ok(elasticSearchService.findProductsByFilters(
                 categoryId, minPrice, maxPrice, brand, isAvailable));
     }
 
@@ -107,7 +96,7 @@ public class ProductControllers {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String sortField) {
-        return ResponseEntity.ok(productService.searchProducts(searchTerm, page, size, sortField));
+        return ResponseEntity.ok(elasticSearchService.searchProducts(searchTerm, page, size, sortField));
     }
 }
 

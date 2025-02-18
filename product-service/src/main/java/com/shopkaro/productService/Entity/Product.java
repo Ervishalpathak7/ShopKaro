@@ -2,6 +2,7 @@ package com.shopkaro.productService.Entity;
 
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Document(collection = "products")
 @Data
+@NoArgsConstructor
 public class Product {
 
     @Id
@@ -37,7 +39,7 @@ public class Product {
 
     @NonNull
     @Indexed
-    private Double price;
+    private String price;
 
     @NonNull
     private Integer quantity;
